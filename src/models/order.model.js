@@ -1,70 +1,67 @@
 import mongoose from "mongoose";
 
-const orderItemSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true
-    },
-    quantity: {
-      type: Number,
-      required: true
-    },
-    price: {
-      type: Number,
-      required: true
-    }
-  },
-  {
-    _id: false
-  }
-);
+import {
+    ORDER_STATUS,
+    DELIVERY_PRIORITY
+} from "../utils/constants.js";
+
 
 const orderSchema = new mongoose.Schema(
-  {
-    customer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
+    {
+        customer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true
+        },
+
+        items: [
+            {
+                name: {
+                    type: String,
+                    required: true
+                },
+
+                quantity: {
+                    type: Number,
+                    required: true,
+                    min: 1
+                },
+
+                price: {
+                    type: Number,
+                    required: true,
+                    min: 0
+                }
+            }
+        ],
+
+        deliveryAddress: {
+            type: String,
+            required: true
+        },
+
+        total: {
+            type: Number,
+            required: true,
+            min: 0
+        },
+
+        status: {
+            type: String,
+            enum: Object.values(ORDER_STATUS),
+            default: ORDER_STATUS.CREATED
+        },
+
+        priority: {
+            type: String,
+            enum: Object.values(DELIVERY_PRIORITY),
+            default: DELIVERY_PRIORITY.NORMAL
+        }
     },
-    store: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Store",
-      required: true
-    },
-    items: {
-      type: [orderItemSchema],
-      required: true
-    },
-    deliveryAddress: {
-      type: String,
-      required: true
-    },
-    total: {
-      type: Number,
-      required: true
-    },
-    status: {
-      type: String,
-      enum: ["created", "assigned", "picked_up", "in_transit", "delivered", "cancelled"],
-      default: "created"
-    },
-    priority: {
-      type: String,
-      enum: ["low", "normal", "high"],
-      default: "normal"
-    },
-    proof: {
-      type: Object,
-      default: null
+    {
+        timestamps: true
     }
-  },
-  {
-    timestamps: true,
-    versionKey: false
-  }
 );
 
-const OrderModel = mongoose.model("Order", orderSchema);
 
-export default OrderModel;
+export const Order = mongoose.model("Order", orderSchema);
