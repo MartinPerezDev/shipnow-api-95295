@@ -13,6 +13,10 @@ export const orderRepository = {
     return OrderModel.create(orderData);
   },
 
+  insertMany: async (orders) => {
+    return OrderModel.insertMany(orders);
+  },
+
   updateStatus: async (id, status) => {
     return OrderModel.findByIdAndUpdate(
       id,

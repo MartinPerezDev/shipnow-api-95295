@@ -1,331 +1,74 @@
-## Funcionamiento base de la API
+# ShipNow API
 
-ShipNow API es una aplicación backend construida con Node.js, Express y MongoDB.
+API de logística construida con Node.js, Express y MongoDB. Esta versión integra la
+base de las clases 1 y 2: configuración inicial, arquitectura por capas y generación
+de datos ficticios.
 
-En su estado base, la API permite trabajar con tres entidades principales:
+## Entidades
 
-* Usuarios
-* Comercios
-* Pedidos
+La API trabaja únicamente con estas entidades:
 
-La idea del proyecto es simular una API simple de logística/envíos.
+- `User`: usuario del sistema. Roles disponibles: `admin`, `customer` y `store`.
+- `Store`: comercio asociado a un usuario con rol `store`.
+- `Order`: pedido asociado a un usuario `customer` y a un `store`.
 
-Un usuario puede representar a un cliente.
-Un comercio representa el lugar desde donde sale el pedido.
-Un pedido representa una solicitud de envío asociada a un usuario y a un comercio.
+No se incluyen entidades `delivery` ni `driver`.
 
-### Flujo principal
+## Instalación y configuración
 
-El flujo básico de la API es:
-
-1. Crear un usuario.
-2. Crear un comercio.
-3. Crear un pedido usando el ID del usuario y el ID del comercio.
-4. Consultar los pedidos.
-5. Actualizar el estado de un pedido.
-
-El pedido contiene una lista de items, una dirección de entrega, un total calculado y un estado.
-
-### Entidades principales
-
-### User
-
-Representa a un usuario dentro del sistema.
-
-Campos principales:
-
-```json
-{
-  "firstName": "Martina",
-  "lastName": "Gómez",
-  "email": "martina@test.com",
-  "password": "123456",
-  "role": "customer"
-}
+```bash
+npm install
 ```
 
-Roles disponibles:
+Crear un archivo `.env` en la raíz:
 
-```txt
-admin
-customer
-store
+```env
+PORT=8080
+MONGODB_URI=mongodb://localhost:27017/shipnow
 ```
 
-En esta versión base, el usuario se usa principalmente como cliente del pedido.
+`MONGODB_URI` es obligatoria. El servidor carga las variables de entorno antes de
+conectarse a MongoDB.
 
----
+## Ejecución
 
-### Store
-
-Representa un comercio.
-
-Campos principales:
-
-```json
-{
-  "name": "Kiosco Centro",
-  "address": "Av. Siempre Viva 742",
-  "owner": "ID_DEL_USUARIO"
-}
+```bash
+npm run dev
 ```
 
-El campo `owner` guarda el ID de un usuario asociado al comercio.
+Para ejecutar sin nodemon:
 
----
-
-### Order
-
-Representa un pedido o envío.
-
-Campos principales:
-
-```json
-{
-  "customer": "ID_DEL_USUARIO",
-  "store": "ID_DEL_COMERCIO",
-  "deliveryAddress": "Av. Siempre Viva 742",
-  "items": [
-    {
-      "name": "Caja mediana",
-      "quantity": 2,
-      "price": 1500
-    }
-  ]
-}
+```bash
+npm start
 ```
 
-Cuando se crea un pedido, la API calcula el total automáticamente recorriendo los items.
+La API queda disponible en `http://localhost:8080`.
 
-Ejemplo:
+## Arquitectura
 
-```txt
-2 unidades x $1500 = $3000
+```text
+routes       -> define endpoints y delega
+controllers  -> recibe request y construye response
+services     -> contiene la lógica de negocio
+repositories -> accede a MongoDB
+models       -> define schemas de Mongoose
 ```
 
-El pedido se crea inicialmente con estado:
+Ejemplo del flujo de un pedido:
 
-```txt
-created
+```text
+orders.router.js
+  -> order.controller.js
+  -> order.service.js
+  -> order.repository.js
+  -> order.model.js
 ```
 
-Estados posibles del pedido:
+La misma estructura se aplica a `user` y `store`.
 
-```txt
-created
-assigned
-picked_up
-in_transit
-delivered
-cancelled
-```
+## Respuestas
 
-### Endpoints disponibles
-
-### Health check
-
-Permite verificar que la API está funcionando.
-
-```http
-GET /health
-```
-
-Respuesta esperada:
-
-```json
-{
-  "status": "success",
-  "message": "API funcionando correctamente"
-}
-```
-
----
-
-## Users
-
-### Obtener usuarios
-
-```http
-GET /api/users
-```
-
-### Obtener usuario por ID
-
-```http
-GET /api/users/:uid
-```
-
-### Crear usuario
-
-```http
-POST /api/users
-```
-
-Body de ejemplo:
-
-```json
-{
-  "firstName": "Martina",
-  "lastName": "Gómez",
-  "email": "martina@test.com",
-  "password": "123456",
-  "role": "customer"
-}
-```
-
-### Actualizar usuario
-
-```http
-PUT /api/users/:uid
-```
-
-### Eliminar usuario
-
-```http
-DELETE /api/users/:uid
-```
-
----
-
-## Stores
-
-### Obtener comercios
-
-```http
-GET /api/stores
-```
-
-### Obtener comercio por ID
-
-```http
-GET /api/stores/:sid
-```
-
-### Crear comercio
-
-```http
-POST /api/stores
-```
-
-Body de ejemplo:
-
-```json
-{
-  "name": "Kiosco Centro",
-  "address": "Av. Siempre Viva 742",
-  "owner": "ID_DEL_USUARIO"
-}
-```
-
-### Actualizar comercio
-
-```http
-PUT /api/stores/:sid
-```
-
-### Eliminar comercio
-
-```http
-DELETE /api/stores/:sid
-```
-
----
-
-## Orders
-
-### Obtener pedidos
-
-```http
-GET /api/orders
-```
-
-### Obtener pedido por ID
-
-```http
-GET /api/orders/:oid
-```
-
-### Crear pedido
-
-```http
-POST /api/orders
-```
-
-Body de ejemplo:
-
-```json
-{
-  "customer": "ID_DEL_USUARIO",
-  "store": "ID_DEL_COMERCIO",
-  "deliveryAddress": "Av. Siempre Viva 742",
-  "items": [
-    {
-      "name": "Caja mediana",
-      "quantity": 2,
-      "price": 1500
-    },
-    {
-      "name": "Sobre chico",
-      "quantity": 1,
-      "price": 800
-    }
-  ]
-}
-```
-
-Respuesta esperada:
-
-```json
-{
-  "status": "success",
-  "payload": {
-    "_id": "ID_DEL_PEDIDO",
-    "customer": "ID_DEL_USUARIO",
-    "store": "ID_DEL_COMERCIO",
-    "items": [
-      {
-        "name": "Caja mediana",
-        "quantity": 2,
-        "price": 1500
-      },
-      {
-        "name": "Sobre chico",
-        "quantity": 1,
-        "price": 800
-      }
-    ],
-    "deliveryAddress": "Av. Siempre Viva 742",
-    "total": 3800,
-    "status": "created"
-  }
-}
-```
-
-### Actualizar estado del pedido
-
-```http
-PUT /api/orders/:oid/status
-```
-
-Body de ejemplo:
-
-```json
-{
-  "status": "in_transit"
-}
-```
-
-### Eliminar pedido
-
-```http
-DELETE /api/orders/:oid
-```
-
----
-
-## Formato general de respuestas
-
-Las respuestas exitosas siguen una estructura simple:
+Respuesta exitosa:
 
 ```json
 {
@@ -334,7 +77,7 @@ Las respuestas exitosas siguen una estructura simple:
 }
 ```
 
-Las respuestas de error, en esta versión base, todavía se manejan de forma simple desde las rutas:
+Respuesta de error:
 
 ```json
 {
@@ -343,34 +86,165 @@ Las respuestas de error, en esta versión base, todavía se manejan de forma sim
 }
 ```
 
-Más adelante, el proyecto será refactorizado para incorporar una capa centralizada de manejo de errores.
+## Endpoints principales
 
-## Estado actual del proyecto
+### Health check
 
-Esta versión base de ShipNow funciona, pero todavía no representa una API completamente profesional.
-
-Actualmente el proyecto tiene:
-
-```txt
-app.js
-server.js
-models
-routes
-config/db.js
+```http
+GET /health
 ```
 
-Todavía no incorpora:
+### Users
 
-```txt
-controllers
-services
-repositories
-middleware global de errores
-logger profesional
-Swagger
-tests automatizados
-Multer
-Docker
+```http
+GET    /api/users
+GET    /api/users/:uid
+POST   /api/users
+PUT    /api/users/:uid
+DELETE /api/users/:uid
 ```
 
-Durante el curso, la API será mejorada progresivamente para separar responsabilidades, mejorar la mantenibilidad y acercarse a una estructura más profesional.
+Ejemplo de usuario:
+
+```json
+{
+  "firstName": "Martina",
+  "lastName": "Gomez",
+  "email": "martina@test.com",
+  "password": "123456",
+  "role": "customer"
+}
+```
+
+### Stores
+
+```http
+GET    /api/stores
+GET    /api/stores/:sid
+POST   /api/stores
+PUT    /api/stores/:sid
+DELETE /api/stores/:sid
+```
+
+Un store necesita un usuario propietario con rol `store`:
+
+```json
+{
+  "name": "Kiosco Centro",
+  "address": "Av. Siempre Viva 742",
+  "owner": "ID_DEL_USUARIO_STORE"
+}
+```
+
+### Orders
+
+```http
+GET    /api/orders
+GET    /api/orders/:oid
+POST   /api/orders
+PUT    /api/orders/:oid/status
+DELETE /api/orders/:oid
+```
+
+Ejemplo de pedido:
+
+```json
+{
+  "customer": "ID_DEL_USUARIO_CUSTOMER",
+  "store": "ID_DEL_STORE",
+  "deliveryAddress": "Av. Siempre Viva 742",
+  "items": [
+    {
+      "name": "Caja mediana",
+      "quantity": 2,
+      "price": 1500
+    }
+  ]
+}
+```
+
+El service calcula el total automáticamente. El estado inicial es `created`.
+Estados disponibles: `created`, `assigned`, `picked_up`, `in_transit`, `delivered` y
+`cancelled`.
+
+## Mocks
+
+Los mocks generan datos dinámicos usando únicamente `User`, `Store` y `Order`. Cada
+generación crea nuevos IDs. Los endpoints de prueba no guardan datos en MongoDB.
+
+### Usuarios en memoria
+
+```http
+GET /api/mocks/mockingusers?qty=5
+```
+
+Si no se indica `qty`, genera 10 usuarios `customer`.
+
+### Pedidos en memoria
+
+```http
+GET /api/mocks/mockingorders?qty=5
+```
+
+Genera usuarios `customer`, usuarios `store`, comercios y pedidos relacionados sin
+persistirlos.
+
+### Persistir datos ficticios
+
+```http
+POST /api/mocks/generateData
+```
+
+Body opcional:
+
+```json
+{
+  "users": 5,
+  "stores": 2,
+  "orders": 10
+}
+```
+
+Sin body se generan 10 usuarios `customer`, 5 usuarios `store`, 5 stores y 10 orders.
+El resultado de `users` incluye ambos tipos de usuario.
+
+Los datos se persisten en este orden:
+
+```text
+users -> stores -> orders
+```
+
+Respuesta de ejemplo:
+
+```json
+{
+  "status": "success",
+  "payload": {
+    "users": 7,
+    "stores": 2,
+    "orders": 10
+  }
+}
+```
+
+Al repetir la carga pueden producirse errores por emails duplicados, porque `email` es
+único en el modelo `User`.
+
+## Estructura relevante
+
+```text
+src/
+  app.js
+  server.js
+  config/
+  controller/
+  mocks/
+  models/
+  repository/
+  routes/
+  service/
+  utils/constants.js
+```
+
+La siguiente etapa puede incorporar manejo global de errores, validaciones más completas,
+tests y documentación Swagger.
