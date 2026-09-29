@@ -1,8 +1,9 @@
 import "dotenv/config";
 import app from "./app.js";
 import connectDB from "./config/db.js";
+import { config } from "./config/index.js";
 
-const PORT = process.env.PORT || 8080;
+const PORT = config.port;
 
 const startServer = async () => {
   try {
