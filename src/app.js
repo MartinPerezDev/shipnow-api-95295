@@ -7,6 +7,8 @@ import mocksRouter from "./routes/mocks.router.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 
+import loggerRouter from "./routes/logger.router.js"
+
 const app = express();
 
 app.use(cors());
@@ -18,7 +20,7 @@ app.get("/health", (req, res) => {
     message: "API funcionando"
   });
 });
-
+app.use("/",loggerRouter)
 app.use("/api/users", usersRouter);
 app.use("/api/stores", storesRouter);
 app.use("/api/orders", ordersRouter);
