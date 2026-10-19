@@ -7,10 +7,12 @@ import mocksRouter from "./routes/mocks.router.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 
-import loggerRouter from "./routes/logger.router.js"
+import loggerRouter from "./routes/logger.router.js";
+import { requestLogger } from "./middlewares/requestLogger.js";
 
 const app = express();
 
+app.use(requestLogger);
 app.use(cors());
 app.use(express.json());
 
@@ -20,7 +22,7 @@ app.get("/health", (req, res) => {
     message: "API funcionando"
   });
 });
-app.use("/",loggerRouter)
+app.use("/", loggerRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/stores", storesRouter);
 app.use("/api/orders", ordersRouter);

@@ -14,6 +14,7 @@ const customLevels = {
 
 const logger = winston.createLogger({
     levels: customLevels.levels,
+    level: "debug",
 
     format: winston.format.combine(
         winston.format.timestamp(),
