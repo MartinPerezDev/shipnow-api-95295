@@ -9,6 +9,8 @@ import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 
 import loggerRouter from "./routes/logger.router.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
 
 const app = express();
 
@@ -27,6 +29,7 @@ app.use("/api/users", usersRouter);
 app.use("/api/stores", storesRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/mocks", mocksRouter);
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //middleware de rutas no encontradas
 app.use(notFoundHandler);

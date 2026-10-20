@@ -1,0 +1,248 @@
+tags:
+  - name: Orders
+    description: Gestion de pedidos
+
+paths:
+  /api/orders:
+    get:
+      tags:
+        - Orders
+      summary: Listar pedidos
+      responses:
+        "200":
+          description: Lista de pedidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersResponse"
+        "500":
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - Orders
+      summary: Crear un pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Pedido creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: ID invalido o faltan datos obligatorios
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/orders/{oid}:
+    parameters:
+      - name: oid
+        in: path
+        required: true
+        description: ID del pedidos
+        schema:
+          type: string
+        example: 6abafdfde0e140e210ed1505
+    get:
+      tags:
+        - Orders
+      summary: Obtener un pedido por ID
+      responses:
+        "200":
+          description: Pedido obtenido por ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "404":
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - Orders
+      summary: Actualizar el estado del pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: assigned
+      responses:
+        "200":
+          description: Pedido actualizado
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "404":
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Orders
+      summary: Eliminar un pedido
+      responses:
+        "200":
+          description: Elimina un pedido por ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "404":
+          description: ID invalido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    Order:
+      type: 'object'
+      properties:
+        _id:
+          type: 'string'
+          example: '6abafdfde0e140e210ed14da'
+        items:
+            type: 'array'
+            properties:
+              type: 'object'
+              name:
+                type: "string"
+                example: "Paquete 1"
+              quantity:
+                type: "number"
+                example: 2
+        price:
+          type: "number"
+          example: 400
+        deliveryAddress:
+          type: "string"
+          example: "Av. Siempre Viva 101"
+        total:
+          type: "number"
+          example: 3000
+        status:
+          type: "striFng"
+          example: "created"
+        priority:
+          type: "string"
+          example: "normal"
+    OrderResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Orden obtenida por _id
+        payload:
+          $ref: "#/components/schemas/Order"
+    OrdersResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Ordenes obtenidas
+        payload:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+    OrderInput:
+      type: object
+      properties:
+        customer:
+          type: string
+          example: 6abafdfde0e140e210ed1505
+        store:
+          type: string
+          example: 6abafdfde0e140e210ed1504
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Pedido 1
+              quantity:
+                type: number
+                example: 2
+              price:
+                type: number
+                example: 400
+        deliveryAddress:
+          type: string
+          example: Av. Siempre Viva 101
+        priority:
+          type: string
+          enum:
+            - low
+            - normal
+            - high
+          default: normal 
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+          example: Pedido no encontrado
+        code:
+          type: string
+          example: NOT_FOUND
