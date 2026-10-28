@@ -25,7 +25,7 @@ export const createOrder = async (req, res, next) => {
   try {
     const order = await orderService.createOrder(req.body);
 
-    successResponse(res, { message: "Orden creada", payload: order });
+    successResponse(res, { statusCode: 201 , message: "Orden creada", payload: order });
   } catch (error) {
     next(error)
   }

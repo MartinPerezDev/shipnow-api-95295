@@ -8,11 +8,22 @@ import { orderRepository } from '../repository/order.repository.js';
 import { storeRepository } from '../repository/store.repository.js';
 import { userRepository } from '../repository/user.repository.js';
 
+import { createError } from '../utils/apiResponse.js';
+import { ERROR_CODES } from '../utils/errorDictionary.js';
+
+const validateAmount = (quantity) => {
+  if (!Number.isInteger(quantity) || quantity < 0) {
+    throw createError(ERROR_CODES.INVALID_MOCK_AMOUNT);
+  }
+};
+
 export const generateUsers = async (quantity) => {
+  validateAmount(quantity);
   return generateMockUsers(quantity);
 };
 
 export const generateOrders = async (quantity) => {
+  validateAmount(quantity);
   const users = generateMockUsers(quantity);
   const storeUsers = generateMockStoreUsers(quantity);
   const stores = generateMockStores(storeUsers, quantity);
@@ -25,6 +36,14 @@ export const generateOrders = async (quantity) => {
 };
 
 export const generateData = async ({ users = 10, stores = 5, orders = 10 } = {}) => {
+  validateAmount(users);
+  validateAmount(stores);
+  validateAmount(orders);
+
+  if (orders > 0 && (users === 0 || stores === 0)) {
+    throw createError(ERROR_CODES.INVALID_MOCK_AMOUNT);
+  }
+
   const result = {
     users: 0,
     stores: 0,

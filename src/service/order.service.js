@@ -2,6 +2,10 @@ import { orderRepository } from '../repository/order.repository.js';
 import { userRepository } from '../repository/user.repository.js';
 import { storeRepository } from '../repository/store.repository.js';
 
+import { createError } from '../utils/apiResponse.js';
+import { ERROR_CODES } from '../utils/errorDictionary.js';
+import { ORDER_STATUS } from '../utils/constants.js';
+
 export const orderService = {
   getOrders: async () => {
     return orderRepository.findAll();
@@ -11,9 +15,7 @@ export const orderService = {
     const order = await orderRepository.findById(id);
 
     if (!order) {
-      const error = new Error('Pedido no encontrado');
-      error.statusCode = 404;
-      throw error;
+      throw createError(ERROR_CODES.ORDER_NOT_FOUND);
     }
 
     return order;
@@ -22,24 +24,19 @@ export const orderService = {
   createOrder: async (orderData) => {
     const { customer, store, items, deliveryAddress, priority } = orderData;
 
-    if (!customer || !store || !items || !deliveryAddress) {
-      const error = new Error('Faltan datos obligatorios');
-      error.statusCode = 400;
-      throw error;
+    if (!customer || !store || !deliveryAddress ||
+        !Array.isArray(items) || items.length === 0) {
+      throw createError(ERROR_CODES.VALIDATION_ERROR);
     }
 
     const userFound = await userRepository.findById(customer);
     if (!userFound) {
-      const error = new Error('Usuario no encontrado');
-      error.statusCode = 404;
-      throw error;
+      throw createError(ERROR_CODES.USER_NOT_FOUND);
     }
 
     const storeFound = await storeRepository.findById(store);
     if (!storeFound) {
-      const error = new Error('Tienda no encontrado');
-      error.statusCode = 404;
-      throw error;
+      throw createError(ERROR_CODES.STORE_NOT_FOUND);
     }
 
     const total = items.reduce((accumulator, item) => accumulator + item.price * item.quantity, 0);
@@ -55,11 +52,13 @@ export const orderService = {
   },
 
   updateOrderStatus: async (id, status) => {
+    if (!Object.values(ORDER_STATUS).includes(status)) {
+      throw createError(ERROR_CODES.INVALID_ORDER_STATUS);
+    }
+
     const order = await orderRepository.updateStatus(id, status);
     if (!order) {
-      const error = new Error('Pedido no encontrado');
-      error.statusCode = 404;
-      throw error;
+      throw createError(ERROR_CODES.ORDER_NOT_FOUND);
     }
 
     return order;
@@ -68,9 +67,7 @@ export const orderService = {
   deleteOrder: async (id) => {
     const order = await orderRepository.delete(id);
     if (!order) {
-      const error = new Error('Pedido no encontrado');
-      error.statusCode = 404;
-      throw error;
+      throw createError(ERROR_CODES.ORDER_NOT_FOUND);
     }
 
     return order;
