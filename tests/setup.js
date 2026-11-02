@@ -1,3 +1,4 @@
+import "./env.js";
 import { config } from "../src/config/index.js";
 import mongoose from "mongoose";
 import UserModel from "../src/models/user.model.js";
@@ -6,16 +7,16 @@ import OrderModel from "../src/models/order.model.js";
 
 function testDatabase(){
   if(config.nodeEnv !== "test" || mongoose.connection.name !== "shipnow_95295_test"){
-    throw new Error("No se pudo conectar a la base de datos");
+    throw new Error("Limpieza bloqueada: se requiere la base shipnow_95295_test");
   }
 }
 
 async function clean(){
   testDatabase();
 
-  await UserModel.deleteMany({});
-  await StoreModel.deleteMany({});
   await OrderModel.deleteMany({});
+  await StoreModel.deleteMany({});
+  await UserModel.deleteMany({});
 }
 
 export const mochaHooks = {
@@ -25,9 +26,12 @@ export const mochaHooks = {
       throw new Error("Falta MONGODB_URI_TEST en .env");
     }
     
-    await mongoose.connect(config.mongoDbUri);
+    await mongoose.connect(config.mongoDbUri, {
+      serverSelectionTimeoutMS: 5000
+    });
     
     testDatabase();
+    await UserModel.init();
   },
 
   async beforeEach(){
@@ -35,7 +39,13 @@ export const mochaHooks = {
   },
 
   async afterAll(){
-    await mongoose.disconnect();
+    try {
+      if(mongoose.connection.readyState === 1){
+        await clean();
+      }
+    } finally {
+      await mongoose.disconnect();
+    }
   }
 
 }

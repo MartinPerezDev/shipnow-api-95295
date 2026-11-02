@@ -1,5 +1,5 @@
 {
   "spec": ["tests/**/*.test.js"],
-  "require": ["./tests/setup.js"],
+  "require": ["./tests/env.js", "./tests/setup.js"],
   "parallel": false
 }

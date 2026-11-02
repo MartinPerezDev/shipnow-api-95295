@@ -20,7 +20,7 @@ export async function orderFixture() {
   });
 
   const store = await StoreModel.create({
-    name: "Comercio de prueba",
+    name: "Tienda de prueba",
     address: "Calle 123",
     owner: owner._id
   });

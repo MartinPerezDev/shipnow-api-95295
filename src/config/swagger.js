@@ -1,14 +1,15 @@
 import swaggerJSDoc from 'swagger-jsdoc';
+import { config } from './index.js';
 
 const swaggerSpec = swaggerJSDoc({
   definition: {
-    openapi: '3.0.0',
+    openapi: '3.0.3',
     info: {
       title: 'Shipnow API',
       version: '1.0.0',
-      description: 'Documentación api de pedidos',
+      description: 'Usuarios, tiendas, pedidos, mocks y soporte',
     },
-    servers: [{ url: 'http://localhost:8080' }],
+    servers: [{ url: `http://localhost:${config.port}` }],
   },
   apis: ['./src/docs/swagger.yaml'],
 });
